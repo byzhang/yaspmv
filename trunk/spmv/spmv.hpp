@@ -61,7 +61,7 @@ void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
     for(int trans=0;trans<=1;trans++){
     for(int col_delta=0;col_delta<=0;col_delta++){
     for(int tx=0;tx<=1;tx++){
-    for(int coalesced=0;coalesced<=3;coalesced++){
+    for(int coalesced=0;coalesced<=2;coalesced++){
     for(int logp=0;logp<=1;logp++){
     for(int regp=0;regp<=4;regp++){
     for(int bitwidth=8;bitwidth<=32;bitwidth=bitwidth*2){
@@ -381,7 +381,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
     for(int lt=64;lt<=512;lt<<=1){
     for(int bw=8;bw<=32;bw<<=1){
     for(int gp=1;gp<=5;gp++){
-    for(int tr=0;tr<=1;tr++){
+    for(int tr=1;tr<=1;tr++){
     for(int cd=0;cd<=0;cd++){
         if(cd==1&&(tr==0||sizeof(dimType)==2)) continue;
         if(tr==0&&gp>2) continue;
@@ -463,8 +463,8 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
             transpose(clCxt,clbccoo->data3,src_data3,src_data_size,plan->block_width,plan->cta,plan->workgroup,lt,tr);
         }
 
-        for(int tx=0;tx<=1;tx++){
-        for(int co=0;co<=3;co++){
+        for(int tx=1;tx<=1;tx++){
+        for(int co=0;co<=2;co++){
         for(int lg=0;lg<=1;lg++){
             int rg= gp - lg;
             if(tr==0&&co!=0) continue;

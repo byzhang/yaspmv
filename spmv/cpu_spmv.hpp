@@ -24,7 +24,7 @@ void check(dataType *cres,dataType *res,int len)
         dataType minus = cres[i]-res[i];
         if(minus<0) minus=0-minus;
         dataType v=cres[i]>0?cres[i]:0-cres[i];
-        if(minus>v/100000000){
+        if(minus>v/10000){
             count++;
             if(count<10)
                 cout<<"Error: cpu "<<cres[i]<<" gpu "<<res[i]<<" line "<<i<<endl;

@@ -127,7 +127,7 @@ void fileToMtx(char* filename,MTX<dataType> *mtx)
         fscanf(infile, "%d %d", &rowid, &colid);
         rows[i] = rowid - 1;
         cols[i] = colid - 1;
-        data[i] = 1;//i;
+        data[i] = i;
         if (ifreal)
         {
             double dbldata = 0.0f;

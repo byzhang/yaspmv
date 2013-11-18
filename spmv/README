@@ -1,0 +1,2 @@
+1.Please modify the SDK path in Makefile according to your platform
+2.It will take several minitutes to generate the OpenCL kernel code cache at the first run.

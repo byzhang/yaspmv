@@ -291,7 +291,7 @@ __kernel void spmv_bccoo(__global VEC_TYPE *data,
    unsigned int gid = get_group_id(0);
 #endif
 #if NB_LOCAL_SIZE   //if using local memory to cache the intermediate sums.
-    __local SEG_TYPE intermediate_sum_l[NB_CTA_NUM][NB_LOCAL_SIZE][NB_LOCAL_SIZE];  //intermediate_sum in local memory
+    __local SEG_TYPE intermediate_sum_l[NB_CTA_NUM][NB_LOCAL_SIZE][NB_LOCAL_SIZE+1];  //intermediate_sum in local memory
     unsigned int ctaid = lid / NB_LOCAL_SIZE;
     unsigned int laneid = lid & (NB_LOCAL_SIZE-1);
 #endif

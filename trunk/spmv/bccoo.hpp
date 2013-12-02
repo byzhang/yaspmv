@@ -117,7 +117,7 @@ int getBlockRow(MTX<dataType> *mtx,int slice_rows,BCCOO<dataType,dimType,bitType
 
 int getBlockNumber(int *row,int *col,int cols,int nnz,int block_width,int block_height)
 {
-    unsigned int * hash=new unsigned int[cols/block_width];
+    unsigned int * hash=new unsigned int[cols/block_width+1];
     memset(hash,255,(cols+block_width-1)/block_width*4);
     int count = 0;
     for(int i=0;i<nnz;i++){

@@ -55,14 +55,30 @@ void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
 #if defined PERF
     cout<<"compile start ... "<<endl;
 #endif
+#if defined PRUNING
     for(int bs=0;bs<3;bs++){
+#else
+    for(int bs=0;bs<4;bs++){
+#endif
     for(int slices=1;slices<=32;slices*=2){
     for(int lt=64;lt<=512;lt<<=1){
+#if defined PRUNING
+    for(int trans=1;trans<=1;trans++){
+#else
     for(int trans=0;trans<=1;trans++){
+#endif
     for(int col_delta=0;col_delta<=0;col_delta++){
+#if defined PRUNING
+    for(int tx=1;tx<=1;tx++){
+#else
     for(int tx=0;tx<=1;tx++){
+#endif
     for(int coalesced=0;coalesced<=2;coalesced++){
+#if defined PRUNING
+    for(int logp=1;logp<=1;logp++){
+#else
     for(int logp=0;logp<=1;logp++){
+#endif
     for(int regp=0;regp<=4;regp++){
     for(int bitwidth=8;bitwidth<=32;bitwidth=bitwidth*2){
         int width=block_size[bs][1];
@@ -380,8 +396,16 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
     clbccoo->slices = bccoo->slices;
     for(int lt=64;lt<=512;lt<<=1){
     for(int bw=8;bw<=32;bw<<=1){
+#if defined PRUNING
+    for(int gp=1;gp<=4;gp++){
+#else
     for(int gp=1;gp<=5;gp++){
+#endif
+#if defined PRUNING
     for(int tr=1;tr<=1;tr++){
+#else
+    for(int tr=0;tr<=1;tr++){
+#endif
     for(int cd=0;cd<=0;cd++){
         if(cd==1&&(tr==0||sizeof(dimType)==2)) continue;
         if(tr==0&&gp>2) continue;
@@ -463,9 +487,17 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
             transpose(clCxt,clbccoo->data3,src_data3,src_data_size,plan->block_width,plan->cta,plan->workgroup,lt,tr);
         }
 
+#if defined PRUNING
         for(int tx=1;tx<=1;tx++){
+#else
+        for(int tx=0;tx<=1;tx++){
+#endif
         for(int co=0;co<=2;co++){
+#if defined PRUNING
+        for(int lg=0;lg<=0;lg++){
+#else
         for(int lg=0;lg<=1;lg++){
+#endif
             int rg= gp - lg;
             if(tr==0&&co!=0) continue;
             if(co==0&&rg>1) continue;
@@ -618,7 +650,11 @@ void yaSpMVmtx2clbccoo(clContext *clCxt,MTX<dataType> *mtx,CLBCCOO *clbccoo,Plan
     if(tune==1)
         footPrintSort(block_size,mtx);
 
+#if defined PRUNING
     for(int bs=0;bs<3&&tune==1;bs++){
+#else
+    for(int bs=0;bs<4&&tune==1;bs++){
+#endif
         int localthread = 64, cta = 8;
         if(block_size[bs][0]==0||block_size[bs][1]==0) continue;
         for(int slices = 1; slices <= 32; slices*=2){

@@ -39,30 +39,21 @@ void footPrintSort(int block_size[12][3],MTX<dataType> *mtx)
 }
 
 template<class dataType>
-void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
+void generateProgramCache(clContext *clCxt,int square)
 {
     Plan *plan = (Plan *)malloc(sizeof(Plan));
     cl_ulong cstart,cend;
     struct timeval vstart,vend;
     gettimeofday(&vstart,NULL);
-    int block_size[12][3],k=0;
-    for(int bs=0;bs<12;bs++){
-        block_size[bs][2]=INT_MAX;
-        block_size[bs][1]=0;
-        block_size[bs][0]=0;
-    }
-    footPrintSort(block_size,mtx);
 #if defined PERF
-    cout<<"compile start ... "<<endl;
+    cout<<"Generate PTX File & Program Cache ... "<<endl;
 #endif
 #if defined PRUNING
-    for(int bs=0;bs<3;bs++){
     for(int trans=1;trans<=1;trans++){
     for(int tx=1;tx<=1;tx++){
     for(int coalesced=0;coalesced<=2;coalesced++){
     for(int logp=1;logp<=1;logp++){
 #else
-    for(int bs=0;bs<4;bs++){
     for(int trans=0;trans<=1;trans++){
     for(int tx=0;tx<=1;tx++){
     for(int coalesced=0;coalesced<=3;coalesced++){
@@ -73,12 +64,12 @@ void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
     for(int col_delta=0;col_delta<=0;col_delta++){
     for(int regp=0;regp<=4;regp++){
     for(int bitwidth=8;bitwidth<=32;bitwidth=bitwidth*2){
-        int width=block_size[bs][1];
-        int height=block_size[bs][0];
-        int dimwidth = (mtx->cols+width-1)/width > 65535? 32:16;
+    for(int width=1;width<=4;width=width*2){
+    for(int height=1;height<=4;height++){
+    for(int dimwidth=16;dimwidth<=32;dimwidth=dimwidth*2){
         if(trans==0&&regp>1) continue;
         if(width==0||height==0) continue;
-        if(mtx->cols<=mtx->rows && slices!=1) continue;
+        if(square==1 && slices!=1) continue;
         if(col_delta==1&&(trans==0||dimwidth==16)) continue;
         if(trans==0&&coalesced!=0) continue;
         if(coalesced==0&&regp>1) continue;
@@ -107,12 +98,6 @@ void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
             "-D DIM_%d -D TRANS_%d -D TX_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_SIZE=%d -D NB_LOCAL_SIZE=%d -D NB_CTA_%d -D BIT_%d -D SEGSCAN_%d -D COL_COM_%d",
                 plan->dimwidth/8,plan->trans,plan->tx,plan->block_width,plan->block_height,
                 TEXTURE_WIDTH,plan->localthread,registersize,localmemsize,localmemsize,
-                plan->bitwidth,0,plan->col_delta);
-            getProgram("spmv_strategy_a.cl",build_options,clCxt);
-            sprintf(build_options ,
-            "-D DIM_%d -D TRANS_%d -D TX_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_SIZE=%d -D NB_LOCAL_SIZE=%d -D NB_CTA_%d -D BIT_%d -D SEGSCAN_%d -D COL_COM_%d",
-                plan->dimwidth/8,plan->trans,plan->tx,plan->block_width,plan->block_height,
-                TEXTURE_WIDTH,plan->localthread,registersize,localmemsize,localmemsize,
                 plan->bitwidth,1,plan->col_delta);
             getProgram("spmv_strategy_a.cl",build_options,clCxt);
         }
@@ -121,22 +106,16 @@ void generateProgramCache(clContext *clCxt,MTX<dataType> *mtx)
             "-D DIM_%d -D TX_%d -D TRANS_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_GRP=%d -D BIT_%d -D SEGSCAN_%d -D CACHE_LEN=%d -D COL_COM_%d",
                 plan->dimwidth/8,plan->tx,plan->trans,plan->block_width,plan->block_height,
                 TEXTURE_WIDTH,plan->localthread,plan->registergroup,plan->bitwidth,
-                0,plan->coalesced*plan->localthread,plan->col_delta);
-            getProgram("spmv_strategy_b.cl",build_options,clCxt);
-            sprintf(build_options ,
-            "-D DIM_%d -D TX_%d -D TRANS_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_GRP=%d -D BIT_%d -D SEGSCAN_%d -D CACHE_LEN=%d -D COL_COM_%d",
-                plan->dimwidth/8,plan->tx,plan->trans,plan->block_width,plan->block_height,
-                TEXTURE_WIDTH,plan->localthread,plan->registergroup,plan->bitwidth,
                 1,plan->coalesced*plan->localthread,plan->col_delta);
             getProgram("spmv_strategy_b.cl",build_options,clCxt);
         }
         //cout<<build_options<<endl;
-    }}}}}}}}}}
+    }}}}}}}}}}}}
     gettimeofday(&vend,NULL);
     cstart=(cl_ulong)vstart.tv_sec*1000000 + (cl_ulong)vstart.tv_usec;
     cend=(cl_ulong)vend.tv_sec*1000000 + (cl_ulong)vend.tv_usec;
 #if defined PERF
-    cout<<"compile time:"<<cend - cstart<<endl;
+    cout<<"Cost Time:"<<cend - cstart<<endl;
 #endif
 }
 
@@ -290,17 +269,16 @@ void yaSpMVRun(clContext *clCxt,CLBCCOO *clbccoo,cl_mem vec_dev,cl_mem res_dev,P
     char build_options[200];
     if(plan->coalesced==0){
         sprintf(build_options ,
-            "-D DIM_%d -D TRANS_%d -D TX_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_SIZE=%d -D NB_LOCAL_SIZE=%d -D NB_CTA_%d -D BIT_%d -D SEGSCAN_%d -D COL_COM_%d",
+            "-D DIM_%d -D TRANS_%d -D TX_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_SIZE=%d -D NB_LOCAL_SIZE=%d -D NB_CTA_%d -D BIT_%d -D SEGSCAN_1 -D COL_COM_%d",
             plan->dimwidth/8,plan->trans,plan->tx,plan->block_width,plan->block_height,
             TEXTURE_WIDTH,plan->localthread,registersize,localmemsize,localmemsize,plan->bitwidth,
-            clbccoo->max_block_per_row>plan->bitwidth*(plan->registergroup+plan->localmemgroup),plan->col_delta);
+            plan->col_delta);
     }
     else if(plan->trans==1){
         sprintf(build_options ,
-            "-D DIM_%d -D TX_%d -D TRANS_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_GRP=%d -D BIT_%d -D SEGSCAN_%d -D CACHE_LEN=%d -D COL_COM_%d",
+            "-D DIM_%d -D TX_%d -D TRANS_%d -D NB_VEC_%d  -D BLOCK_HEIGHT_%d -D TX_WIDTH=%d -D NB_L%d -D NB_REG_GRP=%d -D BIT_%d -D SEGSCAN_1 -D CACHE_LEN=%d -D COL_COM_%d",
             plan->dimwidth/8,plan->tx,plan->trans,plan->block_width,plan->block_height,
             TEXTURE_WIDTH,plan->localthread,plan->registergroup,plan->bitwidth,
-            clbccoo->max_block_per_row>plan->bitwidth*plan->registergroup,
             plan->coalesced*plan->localthread,plan->col_delta);
     }
     else

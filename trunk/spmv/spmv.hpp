@@ -39,27 +39,31 @@ void footPrintSort(int block_size[12][3],MTX<dataType> *mtx)
 }
 
 template<class dataType>
-void generateProgramCache(clContext *clCxt,int square)
+void generateProgramCache(clContext *clCxt)
 {
     Plan *plan = (Plan *)malloc(sizeof(Plan));
     cl_ulong cstart,cend;
     struct timeval vstart,vend;
+    FILE *fp = fopen("clbin/sign", "rb");
+    if(fp != NULL){
+        fclose(fp);
+        return;
+    }
     gettimeofday(&vstart,NULL);
 #if defined PERF
     cout<<"Generate PTX File & Program Cache ... "<<endl;
 #endif
-#if defined PRUNING
+#if defined ESTIMATE
     for(int trans=1;trans<=1;trans++){
     for(int tx=1;tx<=1;tx++){
     for(int coalesced=0;coalesced<=2;coalesced++){
-    for(int logp=1;logp<=1;logp++){
+    for(int logp=0;logp<=0;logp++){
 #else
     for(int trans=0;trans<=1;trans++){
     for(int tx=0;tx<=1;tx++){
     for(int coalesced=0;coalesced<=3;coalesced++){
     for(int logp=0;logp<=1;logp++){
 #endif
-    for(int slices=1;slices<=32;slices*=2){
     for(int lt=64;lt<=512;lt<<=1){
     for(int col_delta=0;col_delta<=0;col_delta++){
     for(int regp=0;regp<=4;regp++){
@@ -67,9 +71,9 @@ void generateProgramCache(clContext *clCxt,int square)
     for(int width=1;width<=4;width=width*2){
     for(int height=1;height<=4;height++){
     for(int dimwidth=16;dimwidth<=32;dimwidth=dimwidth*2){
+        if(regp*bitwidth>128) continue;
         if(trans==0&&regp>1) continue;
         if(width==0||height==0) continue;
-        if(square==1 && slices!=1) continue;
         if(col_delta==1&&(trans==0||dimwidth==16)) continue;
         if(trans==0&&coalesced!=0) continue;
         if(coalesced==0&&regp>1) continue;
@@ -80,7 +84,6 @@ void generateProgramCache(clContext *clCxt,int square)
         plan->tx = tx;
         plan->trans = trans;
         plan->coalesced = coalesced;
-        plan->slices= slices;
         plan->localthread = lt; 
         plan->registergroup = regp;
         plan->localmemgroup = logp;
@@ -100,6 +103,7 @@ void generateProgramCache(clContext *clCxt,int square)
                 TEXTURE_WIDTH,plan->localthread,registersize,localmemsize,localmemsize,
                 plan->bitwidth,1,plan->col_delta);
             getProgram("spmv_strategy_a.cl",build_options,clCxt);
+            cout<<build_options<<endl;
         }
         else if(plan->trans==1){
             sprintf(build_options ,
@@ -108,9 +112,15 @@ void generateProgramCache(clContext *clCxt,int square)
                 TEXTURE_WIDTH,plan->localthread,plan->registergroup,plan->bitwidth,
                 1,plan->coalesced*plan->localthread,plan->col_delta);
             getProgram("spmv_strategy_b.cl",build_options,clCxt);
+            cout<<build_options<<endl;
         }
-        //cout<<build_options<<endl;
-    }}}}}}}}}}}}
+    }}}}}}}}}}}
+    fp = fopen("clbin/sign", "wb+");
+    if(fp != NULL)
+    {
+        fwrite("OK", 2, 1, fp);
+        fclose(fp);
+    }
     gettimeofday(&vend,NULL);
     cstart=(cl_ulong)vstart.tv_sec*1000000 + (cl_ulong)vstart.tv_usec;
     cend=(cl_ulong)vend.tv_sec*1000000 + (cl_ulong)vend.tv_usec;
@@ -366,7 +376,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
     clbccoo->slices = bccoo->slices;
     for(int lt=64;lt<=512;lt<<=1){
     for(int bw=8;bw<=32;bw<<=1){
-#if defined PRUNING
+#if defined ESTIMATE
     for(int gp=1;gp<=4;gp++){
     for(int tr=1;tr<=1;tr++){
 #else
@@ -454,7 +464,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
             transpose(clCxt,clbccoo->data3,src_data3,src_data_size,plan->block_width,plan->cta,plan->workgroup,lt,tr);
         }
 
-#if defined PRUNING
+#if defined ESTIMATE
         for(int tx=1;tx<=1;tx++){
         for(int co=0;co<=2;co++){
         for(int lg=0;lg<=0;lg++){
@@ -615,11 +625,7 @@ void yaSpMVmtx2clbccoo(clContext *clCxt,MTX<dataType> *mtx,CLBCCOO *clbccoo,Plan
     if(tune==1)
         footPrintSort(block_size,mtx);
 
-#if defined PRUNING
-    for(int bs=0;bs<3&&tune==1;bs++){
-#else
     for(int bs=0;bs<4&&tune==1;bs++){
-#endif
         int localthread = 64, cta = 8;
         if(block_size[bs][0]==0||block_size[bs][1]==0) continue;
         for(int slices = 1; slices <= 32; slices*=2){

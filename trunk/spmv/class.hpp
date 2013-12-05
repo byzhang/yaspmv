@@ -1,7 +1,7 @@
 #define TEXTURE_WIDTH 512
 #define MAX_LEVELS 1000
 #define TIMES 2 
-//#define PRUNING 
+//#define ESTIMATE
 //#define DEBUG
 
 template <class dataType>

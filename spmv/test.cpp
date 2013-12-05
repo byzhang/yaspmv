@@ -6,7 +6,6 @@ int main(int argc, char* argv[]){
         cout<<"Usage: ./spmv sparse.mtx [optimal.cfg]"<<endl;
         return 0;
     }
-    //setenv("CUDA_CACHE_DISABLE", "1", 1);
     char* filename = argv[1];
     FILE* infile = fopen(filename, "r");
     clContext clCxt;
@@ -19,7 +18,7 @@ int main(int argc, char* argv[]){
     cl_mem vec_dev,res_dev;
     float *vec = new float[mtx.cols];
     for(int i=0;i<mtx.cols;i++) vec[i]=i;
-    int tune = 1,square = mtx.cols==mtx.rows?1:0; //square=1 means the width of the matrix equal to the height of the matrix.
+    int tune = 1;
     if(argc == 3){
         FILE* infile_1 = fopen(argv[2], "r");
         fscanf(infile_1, "%d", &best.dimwidth);
@@ -39,7 +38,7 @@ int main(int argc, char* argv[]){
         tune = 0;
     }
     else
-        generateProgramCache<float>(&clCxt,square); //only support float
+        generateProgramCache<float>(&clCxt); //only support float
     
     yaSpMVmtx2clbccoo<float>(&clCxt,&mtx,&clbccoo,&best,tune);
     

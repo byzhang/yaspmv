@@ -132,11 +132,12 @@ cl_program getProgram(string source,char * build_options,clContext *clCxt)
         char all_build_options[1024];
         string filename;
         memset(all_build_options, 0, 1024);
+        all_build_options[0]='k';
         if(build_options != NULL){
-            for(int i=0,j=0;build_options[i]!='\0';i++){
-                if(build_options[i]!=' '&&build_options[i]!='-'&&build_options[i]!='='){
+            for(int i=0,j=1;build_options[i]!='\0';i++){
+                if((build_options[i]<='9'&&build_options[i]>='0')||build_options[i]=='-'){
                     all_build_options[j] = build_options[i];
-                   j++;
+                    j++;
                 }
             }
         }
@@ -248,9 +249,10 @@ cl_kernel getKernel(string source,string kernelName, vector< pair<size_t,const v
         char all_build_options[1024];
         string filename;
         memset(all_build_options, 0, 1024);
+        all_build_options[0]='k';
         if(build_options != NULL){
-            for(int i=0,j=0;build_options[i]!='\0';i++){
-                if(build_options[i]!=' '&&build_options[i]!='-'&&build_options[i]!='='){
+            for(int i=0,j=1;build_options[i]!='\0';i++){
+                if((build_options[i]<='9'&&build_options[i]>='0')||build_options[i]=='-'){
                     all_build_options[j] = build_options[i];
                    j++;
                 }

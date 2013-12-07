@@ -62,7 +62,7 @@ void generateProgramCache(clContext *clCxt)
 #else
     for(int trans=0;trans<=1;trans++){
     for(int tx=0;tx<=1;tx++){
-    for(int coalesced=0;coalesced<=3;coalesced++){
+    for(int coalesced=0;coalesced<=4;coalesced++){
     for(int logp=0;logp<=1;logp++){
     for(int col_delta=0;col_delta<=1;col_delta++){
 #endif
@@ -380,7 +380,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
 #if defined ESTIMATE
     for(int gp=1;gp<=4;gp++){
     for(int tr=1;tr<=1;tr++){
-    for(int cd=0;cd<=0;cd++){
+    for(int cd=0;cd<=1;cd++){
 #else
     for(int gp=1;gp<=5;gp++){
     for(int tr=0;tr<=1;tr++){
@@ -472,7 +472,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
         for(int lg=0;lg<=0;lg++){
 #else
         for(int tx=0;tx<=1;tx++){
-        for(int co=0;co<=3;co++){
+        for(int co=0;co<=4;co++){
         for(int lg=0;lg<=1;lg++){
 #endif
             int rg= gp - lg;

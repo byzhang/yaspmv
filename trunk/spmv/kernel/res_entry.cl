@@ -29,7 +29,7 @@
 __kernel void res_entry(__global unsigned BIT_TYPE *bit,__global int *res_entry, 
 #if defined COL_COM_1
                    __global short *col_delta,
-                   __global int *col,
+                   __global unsigned int *col,
 #endif
                    __global int * para_scan, int cta,
                    __global volatile int *inter,int groupnum)

@@ -58,14 +58,15 @@ void generateProgramCache(clContext *clCxt)
     for(int tx=1;tx<=1;tx++){
     for(int coalesced=0;coalesced<=2;coalesced++){
     for(int logp=0;logp<=0;logp++){
+    for(int col_delta=0;col_delta<=0;col_delta++){
 #else
     for(int trans=0;trans<=1;trans++){
     for(int tx=0;tx<=1;tx++){
     for(int coalesced=0;coalesced<=3;coalesced++){
     for(int logp=0;logp<=1;logp++){
+    for(int col_delta=0;col_delta<=1;col_delta++){
 #endif
     for(int lt=64;lt<=512;lt<<=1){
-    for(int col_delta=0;col_delta<=0;col_delta++){
     for(int regp=0;regp<=4;regp++){
     for(int bitwidth=8;bitwidth<=32;bitwidth=bitwidth*2){
     for(int width=1;width<=4;width=width*2){
@@ -74,7 +75,7 @@ void generateProgramCache(clContext *clCxt)
         if(regp*bitwidth>128) continue;
         if(trans==0&&regp>1) continue;
         if(width==0||height==0) continue;
-        if(col_delta==1&&(trans==0||dimwidth==16)) continue;
+        if(col_delta==1&&(trans==0||dimwidth==16||width+height>3)) continue;
         if(trans==0&&coalesced!=0) continue;
         if(coalesced==0&&regp>1) continue;
         if(logp==0&&trans==0) continue;
@@ -225,8 +226,8 @@ void getResEntryGpu(clContext *clCxt,cl_mem &gbit,cl_mem &res_dev_entry,
     args.push_back( make_pair( sizeof(cl_mem) , (void *)&gbit ));
     args.push_back( make_pair( sizeof(cl_mem) , (void *)&res_dev_entry ));
     if(col_delta==1){
-        args.push_back( make_pair( sizeof(cl_mem) , (void *)&gcol ));
         args.push_back( make_pair( sizeof(cl_mem) , (void *)&gcol_delta ));
+        args.push_back( make_pair( sizeof(cl_mem) , (void *)&gcol ));
     }
     args.push_back( make_pair( sizeof(cl_mem) , (void *)&gpara_scan ));
     args.push_back( make_pair( sizeof(cl_int) , (void *)&cta ));
@@ -379,12 +380,13 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
 #if defined ESTIMATE
     for(int gp=1;gp<=4;gp++){
     for(int tr=1;tr<=1;tr++){
+    for(int cd=0;cd<=0;cd++){
 #else
     for(int gp=1;gp<=5;gp++){
     for(int tr=0;tr<=1;tr++){
+    for(int cd=0;cd<=1;cd++){
 #endif
-    for(int cd=0;cd<=0;cd++){
-        if(cd==1&&(tr==0||sizeof(dimType)==2)) continue;
+        if(cd==1&&(tr==0||sizeof(dimType)==2||plan->block_width+plan->block_height>3)) continue;
         if(tr==0&&gp>2) continue;
 #if defined PERF
         cout<<"dim:"<<plan->dimwidth<<" bw:"<<bw<<" wid:"<<plan->block_width<<" hei:"<<plan->block_height

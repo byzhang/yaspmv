@@ -58,7 +58,7 @@ void generateProgramCache(clContext *clCxt)
     for(int tx=1;tx<=1;tx++){
     for(int coalesced=0;coalesced<=2;coalesced++){
     for(int logp=0;logp<=0;logp++){
-    for(int col_delta=0;col_delta<=0;col_delta++){
+    for(int col_delta=0;col_delta<=1;col_delta++){
 #else
     for(int trans=0;trans<=1;trans++){
     for(int tx=0;tx<=1;tx++){

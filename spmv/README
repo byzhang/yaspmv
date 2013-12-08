@@ -1,3 +1,4 @@
 1.Please modify the SDK path in Makefile according to your platform
 2.It will take some time to generate the OpenCL kernel code cache at the first run.
-3.If there is any problem to run the code, please contact yanshengen@gmail.com for help.
+3.There are two auto-tuning strategies. You can modify the corresponding macro in class.hpp to select the proper strategy.
+4.If there is any problem to run the code, please contact yanshengen@gmail.com for help.

@@ -3,7 +3,6 @@
 #include "mtx.hpp"
 #include "bccoo.hpp"
 #include "cpu_spmv.hpp"
-
 extern TimeRcd timeRcd;
 
 template<class dataType>
@@ -66,7 +65,7 @@ void generateProgramCache(clContext *clCxt)
     for(int logp=0;logp<=1;logp++){
     for(int col_delta=0;col_delta<=1;col_delta++){
 #endif
-    for(int lt=64;lt<=512;lt<<=1){
+    for(int lt=64;lt<=MAX_WORKGROUP_SIZE;lt<<=1){
     for(int regp=0;regp<=4;regp++){
     for(int bitwidth=8;bitwidth<=32;bitwidth=bitwidth*2){
     for(int width=1;width<=4;width=width*2){
@@ -79,7 +78,7 @@ void generateProgramCache(clContext *clCxt)
         if(trans==0&&coalesced!=0) continue;
         if(coalesced==0&&regp>1) continue;
         if(logp==0&&trans==0) continue;
-        if(coalesced==0&&(lt*(height==3?4:height)*bitwidth>12*1024))  continue;
+        if(coalesced==0&&(lt*(height==3?4:height)*bitwidth>SH_MEM_SIZE/4))  continue;
         if(trans==1&&coalesced!=0&&(regp==0||logp!=0)) continue;
         if(regp==0&&logp==0) continue;
         plan->tx = tx;
@@ -375,7 +374,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
     clbccoo->max_block_per_row = bccoo->max_block_per_row;
     clbccoo->slice_rows = bccoo->slice_rows;
     clbccoo->slices = bccoo->slices;
-    for(int lt=64;lt<=512;lt<<=1){
+    for(int lt=64;lt<=MAX_WORKGROUP_SIZE;lt<<=1){
     for(int bw=8;bw<=32;bw<<=1){
 #if defined ESTIMATE
     for(int gp=1;gp<=4;gp++){
@@ -479,7 +478,7 @@ void getPlan(clContext *clCxt,BCCOO<dataType,dimType,bitType> *bccoo,Plan *best)
             if(tr==0&&co!=0) continue;
             if(co==0&&rg>1) continue;
             if(lg==0&&tr==0) continue;
-            if(co==0&&(lt*(plan->block_height==3?4:plan->block_height)*plan->bitwidth>12*1024))  continue;
+            if(co==0&&(lt*(plan->block_height==3?4:plan->block_height)*plan->bitwidth>SH_MEM_SIZE/4))  continue;
             if(tr==1&&co!=0&&(rg==0||lg!=0)) continue;
             if((rg==0&&lg==0)||rg>4) continue;
 #if defined PERF

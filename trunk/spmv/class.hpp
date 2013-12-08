@@ -1,7 +1,9 @@
 #define TEXTURE_WIDTH 512
 #define MAX_LEVELS 1000
 #define TIMES 2 
-//#define ESTIMATE
+#define SH_MEM_SIZE 48*1024
+#define MAX_WORKGROUP_SIZE 512
+#define ESTIMATE
 //#define DEBUG
 
 template <class dataType>

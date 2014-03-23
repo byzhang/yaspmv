@@ -618,7 +618,7 @@ void yaSpMVmtx2clbccoo(clContext *clCxt,MTX<dataType> *mtx,CLBCCOO *clbccoo,Plan
     gettimeofday(&vstart,NULL);
 #endif
     for(int bs=0;bs<12;bs++){
-        block_size[bs][2]=INT_MAX;
+        block_size[bs][2]=CL_INT_MAX;
         block_size[bs][1]=0;
         block_size[bs][0]=0;
     }

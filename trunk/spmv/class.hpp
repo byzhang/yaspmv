@@ -3,7 +3,7 @@
 #define TIMES 2 
 #define SH_MEM_SIZE 48*1024
 #define MAX_WORKGROUP_SIZE 512
-//#define ESTIMATE
+#define ESTIMATE
 //#define DEBUG
 
 template <class dataType>

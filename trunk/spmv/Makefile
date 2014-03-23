@@ -1,4 +1,4 @@
-ROOTDIR    := /home/cli17/NVIDIA_GPU_Computing_SDK
+ROOTDIR    := ./NVIDIA_GPU_Computing_SDK
 LIBDIR     := $(ROOTDIR)/shared/lib
 SHAREDDIR  := $(ROOTDIR)/shared
 OCLROOTDIR := $(ROOTDIR)/OpenCL
